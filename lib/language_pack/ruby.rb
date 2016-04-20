@@ -277,7 +277,7 @@ SHELL
 
       # TODO when buildpack-env-args rolls out, we can get rid of
       # ||= and the manual setting below
-      config_vars = default_config_vars.each do |key, value|
+      default_config_vars.each do |key, value|
         ENV[key] ||= value
       end
 
@@ -513,7 +513,7 @@ ERROR
   def install_libyaml(dir)
     instrument 'ruby.install_libyaml' do
       FileUtils.mkdir_p dir
-      Dir.chdir(dir) do |dir|
+      Dir.chdir(dir) do
         @fetchers[:buildpack].fetch_untar("#{LIBYAML_PATH}.tgz")
       end
     end
@@ -546,7 +546,9 @@ WARNING
         bundle_without = env("BUNDLE_WITHOUT") || "development:test"
         bundle_bin     = "bundle"
         bundle_command = "#{bundle_bin} install --without #{bundle_without} --path vendor/bundle --binstubs #{bundler_binstubs_path}"
-        bundle_command << " -j4"
+
+        bundle_jobs = env("BUNDLE_JOBS") || "4"
+        bundle_command << " -j#{bundle_jobs}"
 
         if File.exist?("#{Dir.pwd}/.bundle/config")
           warn(<<-WARNING, inline: true)
